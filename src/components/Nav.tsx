@@ -1,14 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const links = [
-  { href: "#top", label: "Home", n: "01" },
-  { href: "#journeys", label: "Tours", n: "02" },
-  { href: "#atlas", label: "Destinations", n: "03" },
-  { href: "#guide", label: "About us", n: "04" },
-  { href: "#enquire", label: "Contact", n: "05" },
+  { href: "/#top", label: "Home", n: "01" },
+  { href: "/#journeys", label: "Tours", n: "02" },
+  { href: "/#atlas", label: "Destinations", n: "03" },
+  { href: "/#guide", label: "About us", n: "04" },
+  { href: "/#enquire", label: "Contact", n: "05" },
 ];
 
 const LOGO_ASPECT = 1536 / 1024;
@@ -69,7 +70,7 @@ export default function Nav() {
           color: "var(--parchment)",
         }}
       >
-        <a href="#top" style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <Link href="/#top" style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <Mark height={solid ? 48 : 60} />
           <span style={{ display: "grid", lineHeight: 1.05 }}>
             <span className="display" style={{ fontSize: "1.16rem", letterSpacing: "-0.02em" }}>
@@ -79,7 +80,7 @@ export default function Nav() {
               Tours &amp; Experiences
             </span>
           </span>
-        </a>
+        </Link>
 
         <ul
           className="nav-links"
@@ -94,15 +95,15 @@ export default function Nav() {
         >
           {links.map((l) => (
             <li key={l.href}>
-              <a href={l.href} className="mono link-underline" style={{ opacity: 0.82 }}>
+              <Link href={l.href} className="mono link-underline" style={{ opacity: 0.82 }}>
                 {l.label}
-              </a>
+              </Link>
             </li>
           ))}
           <li>
-            <a href="#enquire" className="btn btn-solid" style={{ padding: "0.7rem 1.15rem" }}>
+            <Link href="/#enquire" className="btn btn-solid" style={{ padding: "0.7rem 1.15rem" }}>
               Plan a journey
-            </a>
+            </Link>
           </li>
         </ul>
 
@@ -130,7 +131,7 @@ export default function Nav() {
             position: "fixed",
             inset: 0,
             background: "var(--basalt)",
-            zIndex: -1,
+            zIndex: 1,
             paddingTop: "7rem",
             paddingInline: "var(--gut)",
           }}
@@ -144,7 +145,7 @@ export default function Nav() {
                   overflow: "hidden",
                 }}
               >
-                <a
+                <Link
                   href={l.href}
                   onClick={() => setOpen(false)}
                   style={{
@@ -159,7 +160,7 @@ export default function Nav() {
                     {l.n}
                   </span>
                   <span className="display display-md">{l.label}</span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

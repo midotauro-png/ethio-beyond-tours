@@ -1,95 +1,48 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
-import { src, type PhotoKey } from "@/lib/photos";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { src } from "@/lib/photos";
+import { destinations as places } from "@/lib/destinations";
 
-type Place = {
-  n: string;
-  name: string;
-  geez: string;
-  meta: string;
-  note: string;
-  photo: PhotoKey;
-};
-
-const places: Place[] = [
-  {
-    n: "01",
-    name: "Lalibela",
-    geez: "ላሊበላ",
-    meta: "2,500 m · Amhara",
-    note: "Eleven churches cut downward into the tuff in the 12th century, still in daily liturgical use. Go at first light or at Genna.",
-    photo: "deacon",
-  },
-  {
-    n: "02",
-    name: "Simien",
-    geez: "ስሜን ተራሮች",
-    meta: "4,550 m · Gondar",
-    note: "A collapsed volcanic massif with a thousand-metre escarpment. Gelada, walia ibex, and the highest ground in the country.",
-    photo: "gelada",
-  },
-  {
-    n: "03",
-    name: "Danakil",
-    geez: "ዳናኪል",
-    meta: "−125 m · Afar",
-    note: "Sulphur springs, potash flats and one of the few permanent lava lakes on earth. Only travelled November to February.",
-    photo: "dallol",
-  },
-  {
-    n: "04",
-    name: "Lower Omo",
-    geez: "ደቡብ ኦሞ",
-    meta: "500 m · SNNPR",
-    note: "Sixteen peoples along one river. Visited with introductions and consent, never as a photo safari.",
-    photo: "omoVillage",
-  },
-  {
-    n: "05",
-    name: "Harar Jugol",
-    geez: "ሐረር ጁጎል",
-    meta: "1,885 m · Harari",
-    note: "A walled Muslim city of 368 alleys and 82 mosques. Coffee, chat, and the hyena man at the Fallana gate.",
-    photo: "harar",
-  },
-  {
-    n: "06",
-    name: "Lake Tana",
-    geez: "ጣና ሐይቅ",
-    meta: "1,788 m · Amhara",
-    note: "The source of the Blue Nile, ringed by island monasteries reached by papyrus boat.",
-    photo: "falls",
-  },
-  {
-    n: "07",
-    name: "Aksum",
-    geez: "አክሱም",
-    meta: "2,131 m · Tigray",
-    note: "Granite stelae up to 33 metres, subterranean tombs, and the chapel that claims the Ark of the Covenant.",
-    photo: "highlands",
-  },
-];
+// Below this drag distance we treat the gesture as a click, and let the
+// card link underneath the pointer navigate normally. We deliberately
+// avoid setPointerCapture here: capturing the pointer — even briefly —
+// retargets the click event that follows to the rail instead of the link.
+const DRAG_THRESHOLD = 6;
 
 export default function Atlas() {
   const rail = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
-  const state = useRef({ x: 0, left: 0, moved: 0 });
+  const state = useRef({ x: 0, left: 0, moved: 0, active: false });
+
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      if (!state.current.active || !rail.current) return;
+      const dx = e.clientX - state.current.x;
+      state.current.moved = Math.abs(dx);
+      if (state.current.moved >= DRAG_THRESHOLD) setDragging(true);
+      rail.current.scrollLeft = state.current.left - dx;
+    };
+    const onUp = () => {
+      state.current.active = false;
+      setDragging(false);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, []);
 
   const down = (e: React.PointerEvent) => {
     if (!rail.current) return;
-    setDragging(true);
-    state.current = { x: e.clientX, left: rail.current.scrollLeft, moved: 0 };
-    rail.current.setPointerCapture(e.pointerId);
+    state.current = { x: e.clientX, left: rail.current.scrollLeft, moved: 0, active: true };
   };
-  const move = (e: React.PointerEvent) => {
-    if (!dragging || !rail.current) return;
-    const dx = e.clientX - state.current.x;
-    state.current.moved = Math.abs(dx);
-    rail.current.scrollLeft = state.current.left - dx;
-  };
-  const up = () => setDragging(false);
 
   const nudge = (dir: 1 | -1) => {
     rail.current?.scrollBy({ left: dir * 460, behavior: "smooth" });
@@ -129,38 +82,52 @@ export default function Atlas() {
         ref={rail}
         className="rail no-scrollbar"
         onPointerDown={down}
-        onPointerMove={move}
-        onPointerUp={up}
-        onPointerCancel={up}
-        style={{ cursor: dragging ? "grabbing" : "grab" }}
+        style={{
+          cursor: dragging ? "grabbing" : "grab",
+          // Scroll-snap fights every incremental scrollLeft write during a
+          // drag (each write is treated as a settled scroll), so it's
+          // switched off for the duration of the gesture and re-enabled on
+          // release, when it naturally settles the rail onto a card.
+          scrollSnapType: dragging ? "none" : "x proximity",
+        }}
       >
         {places.map((p, i) => (
           <figure key={p.n} className="card" style={{ marginTop: i % 2 ? "3.5rem" : 0 }}>
-            <div className="card-media">
-              <Image
-                src={src(p.photo, 900)}
-                alt={p.name}
-                fill
-                sizes="(max-width: 900px) 74vw, 27vw"
-                className="img-cover duotone"
-                draggable={false}
-              />
-              <span className="mono card-n">{p.n}</span>
-            </div>
-            <figcaption>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "0.7rem" }}>
-                <h3 className="display display-md" style={{ margin: 0 }}>
-                  {p.name}
-                </h3>
-                <span className="geez mono">{p.geez}</span>
+            <Link
+              href={`/destinations/${p.slug}`}
+              className="card-link"
+              draggable={false}
+              onClick={(e) => {
+                if (state.current.moved > 6) e.preventDefault();
+              }}
+            >
+              <div className="card-media">
+                <Image
+                  src={src(p.photo, 900)}
+                  alt={p.name}
+                  fill
+                  sizes="(max-width: 900px) 74vw, 27vw"
+                  className="img-cover duotone"
+                  draggable={false}
+                />
+                <span className="mono card-n">{p.n}</span>
               </div>
-              <p className="mono" style={{ opacity: 0.55, margin: "0.4rem 0 0.9rem" }}>
-                {p.meta}
-              </p>
-              <p style={{ margin: 0, fontSize: "0.94rem", opacity: 0.78, lineHeight: 1.6 }}>
-                {p.note}
-              </p>
-            </figcaption>
+              <figcaption>
+                <div style={{ display: "flex", alignItems: "baseline", gap: "0.7rem" }}>
+                  <h3 className="display display-md" style={{ margin: 0 }}>
+                    {p.name}
+                  </h3>
+                  <span className="geez mono">{p.geez}</span>
+                </div>
+                <p className="mono" style={{ opacity: 0.55, margin: "0.4rem 0 0.9rem" }}>
+                  {p.meta}
+                </p>
+                <p style={{ margin: 0, fontSize: "0.94rem", opacity: 0.78, lineHeight: 1.6 }}>
+                  {p.note}
+                </p>
+                <span className="mono card-cta link-underline">Read more →</span>
+              </figcaption>
+            </Link>
           </figure>
         ))}
         <div style={{ flex: "0 0 var(--gut)" }} />
@@ -191,13 +158,20 @@ export default function Atlas() {
           padding-bottom: 1rem;
           margin-inline: calc(var(--gut) * -1);
           padding-inline: var(--gut);
-          scroll-snap-type: x proximity;
         }
         .card {
           flex: 0 0 clamp(15rem, 27vw, 23rem);
           margin: 0;
           scroll-snap-align: start;
           transition: margin-top .8s var(--ease-elegant);
+        }
+        .card-link { display: block; color: inherit; }
+        .card-cta {
+          display: inline-block;
+          margin-top: 1rem;
+          font-size: 0.66rem;
+          letter-spacing: 0.14em;
+          color: var(--sulphur);
         }
         .card-media {
           position: relative;
