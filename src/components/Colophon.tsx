@@ -1,31 +1,32 @@
 import Image from "next/image";
+import Link from "next/link";
 import { tours } from "@/lib/tours";
 
 const columns: { head: string; items: { label: string; href: string }[] }[] = [
   {
     head: "Journeys",
-    items: tours.map((t) => ({ label: t.title, href: "#journeys" })),
+    items: tours.map((t) => ({ label: t.title, href: "/#journeys" })),
   },
   {
     head: "Regions",
     items: [
-      { label: "Historic north", href: "#atlas" },
-      { label: "Simien & the parks", href: "#atlas" },
-      { label: "Danakil & Afar", href: "#atlas" },
-      { label: "Lower Omo & the south", href: "#atlas" },
-      { label: "Harar & the east", href: "#atlas" },
-      { label: "Addis Ababa day tours", href: "#enquire" },
+      { label: "Historic north", href: "/#atlas" },
+      { label: "Simien & the parks", href: "/#atlas" },
+      { label: "Danakil & Afar", href: "/#atlas" },
+      { label: "Lower Omo & the south", href: "/#atlas" },
+      { label: "Harar & the east", href: "/#atlas" },
+      { label: "Addis Ababa day tours", href: "/#enquire" },
     ],
   },
   {
     head: "Practical",
     items: [
-      { label: "How it works", href: "#terms" },
-      { label: "What's included", href: "#terms" },
-      { label: "When to travel", href: "#atlas" },
-      { label: "Visas & entry", href: "#enquire" },
-      { label: "Responsible travel", href: "#terms" },
-      { label: "Enquire", href: "#enquire" },
+      { label: "How it works", href: "/#terms" },
+      { label: "What's included", href: "/#terms" },
+      { label: "When to travel", href: "/#atlas" },
+      { label: "Visas & entry", href: "/#enquire" },
+      { label: "Responsible travel", href: "/#terms" },
+      { label: "Enquire", href: "/#enquire" },
     ],
   },
 ];
@@ -55,14 +56,14 @@ export default function Colophon() {
           </p>
           <div style={{ display: "flex", gap: "1.25rem", marginTop: "1.75rem" }}>
             {[
-              ["Tripadvisor", "#enquire"],
-              ["Instagram", "#enquire"],
-              ["Facebook", "#enquire"],
+              ["Tripadvisor", "/#enquire"],
+              ["Instagram", "/#enquire"],
+              ["Facebook", "/#enquire"],
               ["WhatsApp", "https://wa.me/251960265436"],
             ].map(([s, href]) => (
-              <a key={s} href={href} className="mono link-underline" style={{ opacity: 0.65 }}>
+              <Link key={s} href={href} className="mono link-underline" style={{ opacity: 0.65 }}>
                 {s}
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -75,9 +76,9 @@ export default function Colophon() {
             <ul style={{ listStyle: "none", margin: "1.1rem 0 0", padding: 0, display: "grid", gap: "0.5rem" }}>
               {c.items.map((i) => (
                 <li key={i.label}>
-                  <a href={i.href} className="link-underline" style={{ fontSize: "0.92rem", opacity: 0.72 }}>
+                  <Link href={i.href} className="link-underline" style={{ fontSize: "0.92rem", opacity: 0.72 }}>
                     {i.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
